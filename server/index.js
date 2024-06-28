@@ -12,7 +12,7 @@ const cors = require("cors");
 const { cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload");
 const dotenv = require("dotenv");
-
+const path = require("path");
 // Setting up port number
 const PORT = process.env.PORT || 4000;
 
@@ -31,6 +31,25 @@ app.use(
 		credentials: true,
 	})
 );
+
+// --------------------------deployment------------------------------
+
+const __dirname1 = path.resolve();
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname1, "../src/build")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname1, "../","src", "build", "index.html"))
+  );
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is running..");
+  });
+}
+
+// --------------------------deployment------------------------------
+
 app.use(
 	fileUpload({
 		useTempFiles: true,
@@ -49,12 +68,12 @@ app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/reach", contactUsRoute);
 
 // Testing the server
-app.get("/", (req, res) => {
-	return res.json({
-		success: true,
-		message: "Your server is up and running ...",
-	});
-});
+// app.get("/", (req, res) => {
+// 	return res.json({
+// 		success: true,
+// 		message: "Your server is up and running ...",
+// 	});
+// });
 
 // Listening to the server
 app.listen(PORT, () => {
